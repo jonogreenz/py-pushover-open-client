@@ -2,7 +2,6 @@ import json
 import threading
 import requests
 import websocket
-from time import sleep
 
 WEBSOCKET_URL = "wss://client.pushover.net/push"
 BASE_URL = "https://api.pushover.net/1/"
@@ -77,7 +76,7 @@ class WSClient:
 	
 	"""TODO: Use the keep-alive packet to determine that the connection
 	is still being kept alive and well?"""
-	"""TODO: Ensure we can keyboard interrupt
+	"""TODO: Ensure we can keyboard interrupt websocket
 	to stop execution"""
 	
 	def __init__(self, inClient):
@@ -114,7 +113,7 @@ class WSClient:
 			self.ws.close()
 			self.mainThread.join()
 		else:
-			print ("Not connected.")
+			print ("Attemping to disconnect but not connected.")
 	
 	def connect(self, callback, traceRoute):
 		"""Connects the client to the websocket"""
@@ -135,7 +134,7 @@ class WSClient:
 			self.mainThread = threading.Thread(target = self.ws.run_forever, args=())
 			self.mainThread.start()
 		else:
-			print ("Already connected.")
+			print ("Attempting to connect but already connected.")
 		
 	"""Internal functions/callbacks"""
 	def respawnConnection(self):
@@ -189,9 +188,11 @@ class WSClient:
 					"check the details you have provided in configuration.")
 		
 	def onError(self, ws, error):
+		"""When websocket recieves an error it ends up here"""
 		print (error)
 		
 	def onClose(self, ws):
+		"""After closing websocket"""
 		print ("Websocket connection closed.")
 		self.connected = False	
 
@@ -275,17 +276,18 @@ class Client:
 	def deleteMessages(self, highestID):
 		"""Deletes all of the messages from pushover's server up to
 		the highest messageID which is to be supplied by the user"""
-		if(self.deviceID or self.secret):
-			delStrURL = DELETE_URL.replace("0000", self.deviceID)
-			payload = {"secret": self.secret, "message": highestID}
-			request = Request('post', delStrURL, payload)
-			if(request.response["status"] != 0):
-				#print ("Deletion successful")
-				pass
+		if(highestID > 0):
+			if(self.deviceID or self.secret):
+				delStrURL = DELETE_URL.replace("0000", self.deviceID)
+				payload = {"secret": self.secret, "message": highestID}
+				request = Request('post', delStrURL, payload)
+				if(request.response["status"] != 0):
+					#print ("Deletion successful")
+					pass
+				else:
+					print ("Could not delete messages. Try again later.")
 			else:
-				print ("Could not delete messages. Try again later.")
-		else:
-			print ("Exception, deviceID and secret is needed for deleting messages!")
+				print ("Exception, deviceID and secret is needed for deleting messages!")
 				
 	def getWebSocketMessages(self, messageCallback = None, traceRoute = False):
 		"""Connects to PushOver's websocket to receive real-time notifications.
@@ -305,7 +307,7 @@ class Client:
 			#Give the callback to websocket to do its thing. 
 			#This bypasses getting the messages separately. Thats it
 			if(not self.websocket.isConnected()):
-				self.websocket.connect(traceRoute)
+				self.websocket.connect(messageCallback, traceRoute)
 		
 	def acknowledgeEmergency(self, receiptID):
 		"""Uses the receiptID which is supplied by the user to acknowledge emergency 

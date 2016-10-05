@@ -1,4 +1,4 @@
-from pushover_client import Client
+from pushover_open_client import Client
 
 
 #If first time setup

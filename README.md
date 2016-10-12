@@ -1,16 +1,16 @@
 # Python Pushover Open Client
-py-pushover-open-client aims to provide unofficial Python bindings for [Pushover's Open Client API](http://pushover.net/api/open).
+py-pushover-open-client aims to provide unofficial Python bindings for [Pushover's Open Client API](https://pushover.net/api/client).
 
-### Usage
+## Usage
 
-#### Setup
-Simply clone this repo and run pip install...
+### Setup
+Simply clone this repository, change into it's root directory and run "pip install ."
 
-#### How to use
+### How to Use
 Please see the examples provided for more detail.
 
-##### Device Registration
-The first step is to register a new desktop device with the pushover servers. This gives us certain device properties, specifically a secret, user key and device key, which can be saved and used by our client to recieve messages. 
+#### Device Registration
+The first step is to register a new desktop device with the Pushover servers. This gives us certain device properties, specifically a secret, user key and device key, which can be saved and used by our client to recieve messages.  
 
 To do this, you must setup a configuration file in JSON format containing your Pushover's email and password as below:
 
@@ -24,7 +24,9 @@ To do this, you must setup a configuration file in JSON format containing your P
 }
 ```
 
-Then run code that looks like this. Replace "deviceName" with a device name between 0 and 25 characters long, "yourInConfig.cfg" with the name of your input configuration file, and "yourOutConfig.cfg" with the name intended for your output configuration file. Note: These can be the same name if you wish.
+
+Then run code that looks like below. Replace "*deviceName*" with a device name between 0 and 25 characters long, "*yourInConfig.cfg*" with the name of your input configuration file, and "*yourOutConfig.cfg*" with the name intended for your output configuration file.  
+*Note: These can be the same name if you wish.*
 
 ```python
 from pushover_open_client import Client
@@ -35,9 +37,11 @@ client.registerDevice("deviceName")
 client.writeConfig("yourOutConfig.cfg")
 ```
 
-Assuming the deviceName has not already been taken, congratulations your new device has been registered! If you recieve an error message saying you could not register the device, try changing the name to be a unique name.
+Assuming the *deviceName* has not already been taken, your new device will be registered!  
 
-##### Receiving Messages
+*Note: If you receive an error message saying you could not register the device, try changing the name to be a unique name.*
+
+#### Receiving Messages
 Once you have completed registration of the device, you want to continue to use the output configuration file which was written during registration. This will contain the information needed to log in to the servers and to receive messages.
 
 When you initially start a client, you will want to flush out any previously recorded messages. This is also a good way to test that your registration has been successful, as you will receive at least one test message from Pushover.
@@ -55,9 +59,9 @@ if(messageList):
 	client.deleteMessages(messageList[-1].id)
 ```
 
-After you have flushed out any previous messages, you can connect to the websocket to recieve real time messages! This can be done in one of two methods - via polling, or via passing in a callback function (recommended). Here are examples of both.
+After you have flushed out any previous messages, you can connect to the websocket to receive real time messages! This can be done in one of two methods - via **polling**, or via passing in a **callback function** (recommended). Here are examples of both:
 
-Polling:
+##### **Polling:**
 ```python
 while(True):
 	messageList = client.getWebSocketMessages()
@@ -78,7 +82,7 @@ while(True):
 	sleep(5) #Wait a few seconds between requests
 ```
 
-Callback:
+##### **Callback:**
 ```python
 def messageCallback(messageList):
 	#Prcoess/do work with messageList!
@@ -97,17 +101,22 @@ def messageCallback(messageList):
 client.getWebSocketMessages(messageCallback)	
 ```
 
-And that's it! Please remember to be responsible when accessing Pushover's API!
+**_And that's it!_** Please remember to be responsible when accessing Pushover's API!
 
-##### Message Object
-Please see [the open client documentation](http://pushover...) for information regarding what each message contains.
+#### Message Object
+Please see [the open client documentation](https://pushover.net/api/client#download) for information regarding what each message contains. Conditional elements are set to None if they do not exist to prevent exceptions.
 ```
-	id, uuid etc...
+All Messages Include:
+id, uuid, title, message, app, aid, icon, data, priority
+
+Some Messages Conditionally Include: 
+sound, url, url_title, acked, receipt, html
 ```
 
-### Acknowledgments
-Thanks to...
-websocket-client
-requests
-...
+## Acknowledgments
+Thanks to the developers of:
+* websocket-client
+* requests
+
+This client is not written or supported by Superblock, the creators of Pushover.
 

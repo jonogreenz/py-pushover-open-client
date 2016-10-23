@@ -4,9 +4,14 @@ py-pushover-open-client aims to provide unofficial Python bindings for [Pushover
 ## Usage
 
 ### Setup
-Simply clone this repository, change into it's root directory and run "pip install ."
+Simply clone this repository, change into it's root directory and run "pip3 install ."
 
 ### How to Use
+You can now import the main client using:
+'''python
+from pushover_open_client import Client
+'''
+
 Please see the examples provided for more detail.
 
 #### Device Registration

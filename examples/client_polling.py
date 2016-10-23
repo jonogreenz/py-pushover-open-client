@@ -12,7 +12,7 @@ from time import sleep
 client = Client("example_device.cfg")
 
 #Get any messages sent before the client has started
-messageList = client.getOustandingMessages()
+messageList = client.getOutstandingMessages()
 
 #Do work with outstanding messages
 
@@ -32,13 +32,11 @@ while(True):
 		
 			#Make sure to acknowledge messages with priority >= 2
 			if(message.priority >= 2):
-				client.acknowledgeEmergency(message.receipt)			
+				if(message.acked != 1):
+					client.acknowledgeEmergency(message.receipt)			
 			
 		#Make sure you delete messages that you recieve!
 		#Input is the message id of the latest you wish to delete
 		client.deleteMessages(messageList[-1].id)
 	
 	sleep(5) #Wait a few seconds between requests
-
-	
-#TODO: Provide a way to disconnect from here?

@@ -59,7 +59,7 @@ class Request:
             if(requestType == 'post'):
                 r = requests.post(url, jsonPayload)
             elif (requestType == 'get'):
-                r = requests.get(url, jsonPayload)
+                r = requests.get(url, params=jsonPayload)
                 
             if(r != None):
                 self.response = r.json()

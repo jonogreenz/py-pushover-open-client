@@ -16,7 +16,8 @@ def messageCallback(messageList):
 		
 			#Make sure to acknowledge messages with priority >= 2
 			if(message.priority >= 2):
-				client.acknowledgeEmergency(message.receipt)			
+				if(message.acked != 1):
+					client.acknowledgeEmergency(message.receipt)			
 			
 		#Make sure you delete messages that you recieve!
 		client.deleteMessages(messageList[-1].id)
@@ -25,7 +26,7 @@ def messageCallback(messageList):
 client = Client("example_device.cfg")
 
 #Get any messages sent before the client has started
-messageList = client.getOustandingMessages()
+messageList = client.getOutstandingMessages()
 
 #Do work with outstanding messages
 

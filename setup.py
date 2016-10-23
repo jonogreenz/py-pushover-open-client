@@ -26,7 +26,7 @@ setup(
 	
 	keywords='',
 	
-	packages=find_packages(exclude=['docs', 'tests*']),
+	packages=find_packages(exclude=['examples']),
 	
 	install_requires=['requests', 'websocket-client'],
 )

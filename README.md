@@ -8,9 +8,9 @@ Simply clone this repository, change into it's root directory and run "pip3 inst
 
 ### How to Use
 You can now import the main client using:
-'''python
+```python
 from pushover_open_client import Client
-'''
+```
 
 Please see the examples provided for more detail.
 

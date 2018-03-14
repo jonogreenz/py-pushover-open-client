@@ -64,7 +64,7 @@ class Request:
             if(r != None):
                 self.response = r.json()
                 if 400 <= r.status_code < 500 or self.response["status"] == 0:
-                    #TODO: Print errors - self.response["errors"]
+                    #TODO: Don't reset the status, use HTTP status codes as intended
                     self.response["status"] = 0
         except requests.exceptions.RequestException as e:
             #Some exception has been raised, set status as 0 before returning
@@ -206,20 +206,25 @@ class Client:
     """This is the class that represents this specific user and device that
     we are logging in from. All messages we receive are sent to this Client."""
     
-    def __init__(self, configFile):
+    def __init__(self, configFile=None, email=None, password=None):
         """Attempts to load and parse the configuration file"""
         """TODO: Error handling and proper exceptions """
         """TODO: Add possible global timeouts for certain functions to prevent
         spamming of gets/posts"""
-        with open(configFile, 'r') as infile:
-            jsonConfig = json.load(infile)
-        
-        self.email = jsonConfig["email"]
-        self.password = jsonConfig["password"]
-        self.secret = jsonConfig["secret"]
-        self.deviceID = jsonConfig["deviceID"]
-        self.userID = jsonConfig["userID"]
-        
+
+        if configFile is not None:
+            with open(configFile, 'r') as infile:
+                jsonConfig = json.load(infile)
+
+            self.email = jsonConfig["email"]
+            self.password = jsonConfig["password"]
+            self.secret = jsonConfig["secret"]
+            self.deviceID = jsonConfig["deviceID"]
+            self.userID = jsonConfig["userID"]
+        else:
+            self.email = email
+            self.password = password
+
         self.websocket = WSClient(self)
         
     def writeConfig(self, configFile):
@@ -242,46 +247,60 @@ class Client:
             self.secret = request.response["secret"]
             self.userID = request.response["id"]
         else:
-            print ("Could not login. Please check your details are correct.")
+            error_message = "Could not login. Please check your details are correct."
+            if ('errors' in request.response and len(request.response['errors']) > 0):
+                error_message += " ({})".format(request.response['errors'])
+            raise PermissionError(error_message)
             
     def registerDevice(self, deviceName):
         """Registers the client as active using supplied information in either
         configuration or after login"""
-        if(self.secret):
-            payload = {"secret": self.secret, "os": "O", "name": deviceName}
-            request = Request('post', DEVICE_URL, payload)
-            if(request.response["status"] != 0):
-                self.deviceID = request.response["id"]
-                #return getOutstandingMessages()
-            else:
-                print ("Could not register device. Check device name is unique and try "
-                        "again later.")
+        if (self.secret is None):
+            raise PermissionError("Secret must be set before registering a device")
+
+        payload = {"secret": self.secret, "os": "O", "name": deviceName}
+        request = Request('post', DEVICE_URL, payload)
+        if(request.response["status"] != 0):
+            self.deviceID = request.response["id"]
+
         else:
-            print ("Exception, secret is needed for device registration!")
-        
+            error_message = "Could not register device."
+            if ('errors' in request.response and len(request.response['errors']) > 0):
+                error_message += " ({})".format(request.response['errors'])
+
+            raise PermissionError(error_message)
+
+
     def getOutstandingMessages(self):
         """Returns json of outstanding messages after login
         and device registration"""
-        if(self.deviceID and self.secret):
-            payload = {"secret": self.secret, "device_id": self.deviceID}
-            request = Request('get', MESSAGES_URL, payload)
-            if(request.response["status"] != 0):
-                #foreach message
-                messageList = []
-                for message in request.response["messages"]:
-                    #create a message class and add to list
-                    thisMessage = Message(message)
-                    messageList.append(thisMessage)
-                #return the list
-                return messageList
-            else:
-                print ("Could not retrieve outstanding messages. Try again later.")
+        if not (self.deviceID and self.secret):
+            raise PermissionError("deviceID and secret is needed for retrieving messages!")
+
+        payload = {"secret": self.secret, "device_id": self.deviceID}
+        request = Request('get', MESSAGES_URL, payload)
+        if(request.response["status"] != 0):
+            #foreach message
+            messageList = []
+            for message in request.response["messages"]:
+                #create a message class and add to list
+                thisMessage = Message(message)
+                messageList.append(thisMessage)
+            #return the list
+            return messageList
         else:
-            print ("Exception, deviceID and secret is needed for retrieving messages!")
-        
+            error_message = "Could not retrieve outstanding messages. Try again later."
+            if ('errors' in request.response and len(request.response['errors']) > 0):
+                error_message += " ({})".format(request.response['errors'])
+
+            raise Exception(error_message)
+
     def deleteMessages(self, highestID):
         """Deletes all of the messages from pushover's server up to
         the highest messageID which is to be supplied by the user"""
+        if not (self.deviceID and self.secret):
+            raise PermissionError("deviceID and secret is needed for deleting messages!")
+
         if(highestID > 0):
             if(self.deviceID or self.secret):
                 delStrURL = DELETE_URL.replace("0000", self.deviceID)
@@ -291,9 +310,11 @@ class Client:
                     #print ("Deletion successful")
                     pass
                 else:
-                    print ("Could not delete messages. Try again later.")
-            else:
-                print ("Exception, deviceID and secret is needed for deleting messages!")
+                    error_message = "Could not delete messages. Try again later."
+                    if ('errors' in request.response and len(request.response['errors']) > 0):
+                        error_message += " ({})".format(request.response['errors'])
+
+                    raise Exception(error_message)
                 
     def getWebSocketMessages(self, messageCallback = None, traceRoute = False):
         """Connects to PushOver's websocket to receive real-time notifications.
@@ -316,17 +337,20 @@ class Client:
                 self.websocket.connect(messageCallback, traceRoute)
         
     def acknowledgeEmergency(self, receiptID):
+        if not self.secret:
+            raise PermissionError("secret is needed for acknowledging messages!")
         """Uses the receiptID which is supplied by the user to acknowledge emergency 
         priority messages"""
-        if(self.secret):
-            ackStrURL = RECEIPT_URL.replace("0000", receiptID)
-            payload = {"secret": self.secret}
-            request = Request('post', ackStrURL, payload)
-            if(request.response["status"] != 0):
-                #print ("Acknowledged successful")
-                pass
-            else:
-                print ("Could not acknowledge emergency priority message. "
-                        "Try again later.")
+
+        ackStrURL = RECEIPT_URL.replace("0000", receiptID)
+        payload = {"secret": self.secret}
+        request = Request('post', ackStrURL, payload)
+        if(request.response["status"] != 0):
+            #print ("Acknowledged successful")
+            pass
         else:
-            print ("Exception, secret is needed for deleting messages!")
+            error_message = "Could not acknowledge emergency priority message."
+            if ('errors' in request.response and len(request.response['errors']) > 0):
+                error_message += " ({})".format(request.response['errors'])
+
+            raise Exception(error_message)

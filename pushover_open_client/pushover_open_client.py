@@ -21,13 +21,13 @@ class Message:
         """Always exist"""
         self.id = messageJson["id"]
         self.umid = messageJson["umid"]
-        self.title = messageJson["title"]
         self.message = messageJson["message"]
         self.app = messageJson["app"]
         self.aid = messageJson["aid"]
         self.icon = messageJson["icon"]
         self.date = messageJson["date"]
         self.priority = messageJson["priority"]
+        self.title = None
         self.sound = None
         self.url = None
         self.url_title = None
@@ -35,6 +35,8 @@ class Message:
         self.receipt = None
         self.html = None
         """Conditionals"""
+        if("title" in messageJson):
+            self.title = messageJson["title"]
         if("sound" in messageJson):
             self.sound = messageJson["sound"]
         if("url" in messageJson):

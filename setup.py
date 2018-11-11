@@ -35,5 +35,5 @@ setup(
 	
 	packages=find_packages(exclude=['examples']),
 	
-	install_requires=['requests', 'websocket-client'],
+	install_requires=['requests>=2.14.0', 'websocket-client>=0.48.0'],
 )

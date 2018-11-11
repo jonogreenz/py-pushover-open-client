@@ -6,7 +6,7 @@ py-pushover-open-client aims to provide unofficial Python bindings for [Pushover
 ### Setup
 
 ```
-	pip3 install py-pushover-open-client 
+pip3 install py-pushover-open-client 
 ```
 
 Or simply clone this repository, change into it's root directory and run "pip3 install ."

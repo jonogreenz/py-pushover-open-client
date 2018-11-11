@@ -152,13 +152,13 @@ class WSClient:
         #Spawn new websocket
         self.connect(self.callback, self.trace)
     
-    def onOpen(self, ws):
+    def onOpen(self):
         """After connecting, 'logs into' the websocket"""
         print ("Websocket connection opened.")
         self.connected = True
         self.ws.send("login:"+self.client.deviceID+":"+self.client.secret+"\n")
     
-    def onRecieve(self, ws, message):
+    def onRecieve(self, message):
         """Handles pushover's frames which tell us if messages have
         arrived, or whether to reconnect"""
         
@@ -195,11 +195,11 @@ class WSClient:
             print ("Exception, an error has occurred with websocket! Please "
                     "check the details you have provided in configuration.")
         
-    def onError(self, ws, error):
+    def onError(self, error):
         """When websocket recieves an error it ends up here"""
         print (error)
         
-    def onClose(self, ws):
+    def onClose(self):
         """After closing websocket"""
         print ("Websocket connection closed.")
         self.connected = False  

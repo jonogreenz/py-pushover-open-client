@@ -8,13 +8,13 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
 	name='py_pushover_open_client',
-	version='1.2.1',
+	version='1.2.2',
 	description='Unofficial Python Bindings for PushOver Open Client API',
 	long_description=long_description,
     long_description_content_type="text/markdown",
 	author='Jonathon Green',
 	author_email='aeirsoul@gmail.com',
-	url='https://github.com/Aeirsoul/py-pushover-open-client',
+	url='https://github.com/jonogreenz/py-pushover-open-client',
 	license='MIT',
 	classifiers=[
 		'Development Status :: 5 - Production/Stable',

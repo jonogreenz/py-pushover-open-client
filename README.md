@@ -117,7 +117,7 @@ client.getWebSocketMessages(messageCallback)
 Please see [the open client documentation](https://pushover.net/api/client#download) for information regarding what each message contains. Conditional elements are set to None if they do not exist to prevent exceptions.
 ```
 All Messages Include:
-id, uuid, title, message, app, aid, icon, data, priority
+id, umid, title, message, app, aid, icon, date, priority
 
 Some Messages Conditionally Include: 
 sound, url, url_title, acked, receipt, html
